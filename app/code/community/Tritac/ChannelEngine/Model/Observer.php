@@ -32,7 +32,7 @@ class Tritac_ChannelEngine_Model_Observer
      *
      * @var ChannelEngine\ApiClient\ApiClient
      */
-    protected $_client = null;
+    protected $_apiConfig = null;
 
     /**
      * API config. API key, API secret, API tenant
@@ -84,16 +84,15 @@ class Tritac_ChannelEngine_Model_Observer
                 $apiConfig->setApiKey('apikey', $storeConfig['general']['api_key']);
                 $apiConfig->setHost('https://'.$storeConfig['general']['tenant'].'.channelengine.net/api');
 
-                $client = new ApiClient($apiConfig);
-                $this->_client[$storeId] = $client;
+                $this->_apiConfig[$storeId] = $apiConfig;
             }
         }
     }
 
-    private function logApiError($response, $model = null)
+    private function logApiError($response, $model = null, $exception = null)
     {
         $this->log(
-            'API Call failed ['.$response->getStatusCode().'] ' . $response->getMessage() . PHP_EOL . print_r($model, true),
+            'API Call failed ['.$response->getStatusCode().'] ' . $response->getMessage() . PHP_EOL . print_r($model, true) . PHP_EOL,
             Zend_Log::ERR
         );
     }
@@ -108,7 +107,7 @@ class Tritac_ChannelEngine_Model_Observer
         if($e instanceof ApiException)
         {
             $message = $e->getMessage() . PHP_EOL . 
-                print_r($e->getResponseBody(), true) .  
+                print_r($e->getResponseObject(), true) .  
                 print_r($e->getResponseHeaders(), true) .
                 print_r($model, true) .
                 $e->getTraceAsString();
@@ -135,11 +134,12 @@ class Tritac_ChannelEngine_Model_Observer
         /**
          * Check if client is initialized
          */
-        if(is_null($this->_client)) return false;
+        if(is_null($this->_apiConfig)) return false;
 
-        foreach($this->_client as $storeId => $client)
+        foreach($this->_apiConfig as $storeId => $config)
         {
-            $orderApi = new OrderApi($client);
+
+            $orderApi = new OrderApi(null, $config);
             $response = null;
 
             try
@@ -412,9 +412,9 @@ class Tritac_ChannelEngine_Model_Observer
         $errorMessage = "Please contact ChannelEngine support at <a href='mailto:support@channelengine.com'>support@channelengine.com</a> or +31(0)71-5288792";
 
         // Check if the API client was initialized for this order
-        if(!isset($this->_client[$storeId])) return false;
+        if(!isset($this->_apiConfig[$storeId])) return false;
 
-        $shipmentApi = new ShipmentApi($this->_client[$storeId]);
+        $shipmentApi = new ShipmentApi(null, $this->_apiConfig[$storeId]);
 
         // Initialize new ChannelEngine shipment object
         $ceShipment = new MerchantShipmentRequest();
@@ -523,11 +523,11 @@ class Tritac_ChannelEngine_Model_Observer
      */
     public function fetchReturns()
     {
-        if(is_null($this->_client)) return false;
+        if(is_null($this->_apiConfig)) return false;
 
-        foreach($this->_client as $storeId => $client)
+        foreach($this->_apiConfig as $storeId => $config)
         {
-            $returnApi = new ReturnApi($client);
+            $returnApi = new ReturnApi(null, $config);
             $lastUpdatedAt = new DateTime('-1 day');
 
             $response = null;
@@ -583,6 +583,8 @@ class Tritac_ChannelEngine_Model_Observer
                 Mage::getModel('adminnotification/inbox')->addCritical($title, $message);
             }
         }
+
+        return true;
     }
 
     /**
