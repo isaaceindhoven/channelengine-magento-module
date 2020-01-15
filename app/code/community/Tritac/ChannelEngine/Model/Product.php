@@ -1,28 +1,30 @@
 <?php
 
 use ChannelEngine\Merchant\ApiClient\Model\MerchantOrderResponse;
-class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_BaseCe
+
+class Tritac_ChannelEngine_Model_Product extends Tritac_ChannelEngine_Model_BaseCe
 {
 
 
-
-
-
     /**
-     * @param $product_number
+     * @param $mpn
      * @return array
      */
-    public function generateProductId($product_number)
+    public function parseMerchantProductNo($mpn)
     {
-        $ids = explode('_', $product_number);
-        $productId = $ids[0];
-        return [
-            'id' => $productId,
-            'productNo' => $product_number,
-            'ids' => $ids
+        $ids = explode('_', $mpn);
+        $result = [
+            'product_id' => $ids[0]
         ];
-    }
 
+        if(count($ids) == 3)
+        {
+            $result['option_id'] = $ids[1];
+            $result['option_value_id'] = $ids[2];
+        }
+
+        return $result;
+    }
 
 
     /**
@@ -54,18 +56,18 @@ class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_Ba
         }
 
 
-
     }
 
     /**
      * @param $magentoOrder
      * @param $order
-     * @return bool]
+     * @param $setShipped
+     * @return bool
      */
-    public function processOrder($magentoOrder,$order, $setShipped)
+    public function processOrder($magentoOrder, $order, $setShipped)
     {
-        try
-        {
+
+        try {
             // Initialize new invoice model
             $invoice = Mage::getModel('sales/service_order', $magentoOrder)->prepareInvoice();
             // Add comment to invoice
@@ -74,6 +76,7 @@ class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_Ba
                 false,
                 true
             );
+
 
             // Register invoice. Register invoice items. Collect invoice totals.
             $invoice->register();
@@ -84,10 +87,13 @@ class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_Ba
             $canShipPartially = ($canShipPartiallyItem || $os == MerchantOrderResponse::CHANNEL_ORDER_SUPPORT_SPLIT_ORDERS);
             // Initialize new channel order
             $_channelOrder = Mage::getModel('channelengine/order');
-            $_channelOrder->setOrderId($magentoOrder->getId())
+            $order_id = $magentoOrder->getId();
+
+            $_channelOrder->setOrderId($order_id)
                 ->setChannelOrderId($order->getChannelOrderNo())
                 ->setChannelName($order->getChannelName())
                 ->setCanShipPartial($canShipPartially);
+
 
             $invoice->getOrder()
                 ->setCanShipPartiallyItem($canShipPartiallyItem)
@@ -100,13 +106,11 @@ class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_Ba
                 ->addObject($_channelOrder);
             $transactionSave->save();
 
-            if($setShipped) {
+            if ($setShipped) {
                 $this->setOrderToShipped($magentoOrder);
             }
-            
             return true;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->addAdminNotification(
                 "An invoice could not be created (order #{$magentoOrder->getIncrementId()}, {$order->getChannelName()} #{$order->getChannelOrderNo()})",
                 "Reason: {$e->getMessage()} Please contact ChannelEngine support at support@channelengine.com"
@@ -116,11 +120,6 @@ class Tritac_ChannelEngine_Model_Product  extends  Tritac_ChannelEngine_Model_Ba
             return false;
         }
     }
-
-
-
-
-
 
 
 }
