@@ -347,7 +347,7 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		if(isset($product['parent_id'])) $io->streamWrite('<ParentId><![CDATA[' . $product['parent_id'] . ']]></ParentId>');
 
 		$strippedDescription = $this->stripHtml($product['description'], true);
-
+		
 		$io->streamWrite('<Type><![CDATA[' . $product['type_id'] . ']]></Type>');
 		$io->streamWrite('<Name><![CDATA[' . $product['name'] . ']]></Name>');
 		$io->streamWrite('<Description><![CDATA['. $strippedDescription . ']]></Description>');
