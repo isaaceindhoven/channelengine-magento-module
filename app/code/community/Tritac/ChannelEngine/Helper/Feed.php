@@ -169,7 +169,9 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		$mediaGalleryBackend->afterLoad($product); 
 
 		$productData = $product->getData();
-		if(!empty($config['general']['gtin'])) $productData['gtin'] = $productData[$config['general']['gtin']];
+        if(!empty($config['general']['gtin']) && array_key_exists($config['general']['gtin'], $productData)) {
+            $productData['gtin'] = $productData[$config['general']['gtin']];
+        }
 		$productData['url'] = $product->getProductUrl();
 		$productData['images'] = $product->getMediaGalleryImages();
 		$finalPrice = $product->getFinalPrice();
@@ -272,15 +274,16 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 			//$childData['price'] = $productData['price'];
 			$childData['url'] = $productData['url'];
 			$childData['description'] = $productData['description'];
+            $childData['short_description'] = $productData['short_description'];
 
 			// The product price field
 			$childData['base_price'] = $childData['price'];
 			// The product special price field
-			$childData['special_price'] = $childData['special_price'];
-			// The manufacturer suggested retail price field
-			$childData['list_price'] = $childData['msrp'];
+            $childData['special_price'] = array_key_exists('special_price', $childData) ? $childData['special_price'] : '';
+            // The manufacturer suggested retail price field
+            $childData['list_price'] = array_key_exists('msrp', $childData) ? $childData['msrp'] : '';
 
-			if(!isset($childData['images']))
+            if(!isset($childData['images']))
 			{
 				$childData['images'] = $productData['images'];
 			} 
@@ -344,14 +347,15 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		if(isset($product['parent_id'])) $io->streamWrite('<ParentId><![CDATA[' . $product['parent_id'] . ']]></ParentId>');
 
 		$strippedDescription = $this->stripHtml($product['description'], true);
-		
-		$io->streamWrite('<Type><![CDATA[' . $product['type_id'] . ']]></Type>');
+        $manufacturer = array_key_exists('manufacturer', $product) ? $product['manufacturer'] : '';
+
+        $io->streamWrite('<Type><![CDATA[' . $product['type_id'] . ']]></Type>');
 		$io->streamWrite('<Name><![CDATA[' . $product['name'] . ']]></Name>');
 		$io->streamWrite('<Description><![CDATA['. $strippedDescription . ']]></Description>');
 		$io->streamWrite('<DescriptionWithHtml><![CDATA['. $strippedDescription . ']]></DescriptionWithHtml>');
 		$io->streamWrite('<ShortDescription><![CDATA['. $this->stripHtml($product['short_description']) . ']]></ShortDescription>');
 		$io->streamWrite('<ShortDescriptionWithHtml><![CDATA['. $this->stripHtml($product['short_description'], true) . ']]></ShortDescriptionWithHtml>');
-		$io->streamWrite('<Manufacturer><![CDATA[' . $product['manufacturer'] . ']]></Manufacturer>');
+		$io->streamWrite('<Manufacturer><![CDATA[' . $manufacturer . ']]></Manufacturer>');
 		$io->streamWrite('<Price><![CDATA['. $product['price'] . ']]></Price>');
 		$io->streamWrite('<LowestPrice><![CDATA['. $product['lowest_price'] . ']]></LowestPrice>');
 		$io->streamWrite('<SpecialPrice><![CDATA['. $product['special_price'] . ']]></SpecialPrice>');
@@ -374,9 +378,11 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 			$io->streamWrite('<VAT><![CDATA[".$vat."]]></VAT>');
 		}
 
-		$shippingTime = ($product['qty'] > 0) ? $this->config[$storeId]['optional']['shipping_time'] : $this->config[$storeId]['optional']['shipping_time_oos'];
+        $configShippingTime = array_key_exists('shipping_time', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time'] : '';
+        $configShippingTimeOos = array_key_exists('shipping_time_oos', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time_oos'] : '';
+        $shippingTime = ($product['qty'] > 0) ? $configShippingTime : $configShippingTimeOos;
 
-		if($shippingTime)
+        if($shippingTime)
 		{
 			$io->streamWrite('<ShippingTime><![CDATA[' . $shippingTime . ']]></ShippingTime>');
 		}
