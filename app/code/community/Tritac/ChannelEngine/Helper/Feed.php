@@ -169,9 +169,9 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		$mediaGalleryBackend->afterLoad($product); 
 
 		$productData = $product->getData();
-        if(!empty($config['general']['gtin']) && array_key_exists($config['general']['gtin'], $productData)) {
-            $productData['gtin'] = $productData[$config['general']['gtin']];
-        }
+		if(!empty($config['general']['gtin']) && array_key_exists($config['general']['gtin'], $productData)) {
+			$productData['gtin'] = $productData[$config['general']['gtin']];
+		}
 		$productData['url'] = $product->getProductUrl();
 		$productData['images'] = $product->getMediaGalleryImages();
 		$finalPrice = $product->getFinalPrice();
@@ -274,16 +274,16 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 			//$childData['price'] = $productData['price'];
 			$childData['url'] = $productData['url'];
 			$childData['description'] = $productData['description'];
-            $childData['short_description'] = $productData['short_description'];
+			$childData['short_description'] = $productData['short_description'];
 
 			// The product price field
 			$childData['base_price'] = $childData['price'];
 			// The product special price field
-            $childData['special_price'] = array_key_exists('special_price', $childData) ? $childData['special_price'] : '';
-            // The manufacturer suggested retail price field
-            $childData['list_price'] = array_key_exists('msrp', $childData) ? $childData['msrp'] : '';
+			$childData['special_price'] = array_key_exists('special_price', $childData) ? $childData['special_price'] : '';
+			// The manufacturer suggested retail price field
+			$childData['list_price'] = array_key_exists('msrp', $childData) ? $childData['msrp'] : '';
 
-            if(!isset($childData['images']))
+			if(!isset($childData['images']))
 			{
 				$childData['images'] = $productData['images'];
 			} 
