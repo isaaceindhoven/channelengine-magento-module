@@ -347,6 +347,7 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		if(isset($product['parent_id'])) $io->streamWrite('<ParentId><![CDATA[' . $product['parent_id'] . ']]></ParentId>');
 
 		$strippedDescription = $this->stripHtml($product['description'], true);
+        $manufacturer = array_key_exists('manufacturer', $product) ? $product['manufacturer'] : '';
 
         $io->streamWrite('<Type><![CDATA[' . $product['type_id'] . ']]></Type>');
 		$io->streamWrite('<Name><![CDATA[' . $product['name'] . ']]></Name>');
@@ -354,7 +355,7 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 		$io->streamWrite('<DescriptionWithHtml><![CDATA['. $strippedDescription . ']]></DescriptionWithHtml>');
 		$io->streamWrite('<ShortDescription><![CDATA['. $this->stripHtml($product['short_description']) . ']]></ShortDescription>');
 		$io->streamWrite('<ShortDescriptionWithHtml><![CDATA['. $this->stripHtml($product['short_description'], true) . ']]></ShortDescriptionWithHtml>');
-		$io->streamWrite('<Manufacturer><![CDATA[' . (array_key_exists('manufacturer', $product) ? $product['manufacturer'] : '') . ']]></Manufacturer>');
+		$io->streamWrite('<Manufacturer><![CDATA[' . $manufacturer . ']]></Manufacturer>');
 		$io->streamWrite('<Price><![CDATA['. $product['price'] . ']]></Price>');
 		$io->streamWrite('<LowestPrice><![CDATA['. $product['lowest_price'] . ']]></LowestPrice>');
 		$io->streamWrite('<SpecialPrice><![CDATA['. $product['special_price'] . ']]></SpecialPrice>');
