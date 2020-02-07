@@ -377,11 +377,11 @@ class Tritac_ChannelEngine_Helper_Feed extends Mage_Core_Helper_Abstract {
 			$io->streamWrite('<VAT><![CDATA[".$vat."]]></VAT>');
 		}
 
-        $configShippingTime = array_key_exists('shipping_time', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time'] : '';
-        $configShippingTimeOos = array_key_exists('shipping_time_oos', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time_oos'] : '';
-        $shippingTime = ($product['qty'] > 0) ? $configShippingTime : $configShippingTimeOos;
+		$configShippingTime = array_key_exists('shipping_time', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time'] : '';
+		$configShippingTimeOos = array_key_exists('shipping_time_oos', $this->config[$storeId]['optional']) ? $this->config[$storeId]['optional']['shipping_time_oos'] : '';
+		$shippingTime = ($product['qty'] > 0) ? $configShippingTime : $configShippingTimeOos;
 
-        if($shippingTime)
+		if($shippingTime)
 		{
 			$io->streamWrite('<ShippingTime><![CDATA[' . $shippingTime . ']]></ShippingTime>');
 		}
